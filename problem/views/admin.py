@@ -114,11 +114,11 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
     def get(self, request):
         problem_id = request.GET.get("problem_id")
         if not problem_id:
-            return self.error("Parameter error, problem_id is required")
+            return self.error("无效的参数, problem_id is required")
         try:
             problem = Problem.objects.get(id=problem_id)
         except Problem.DoesNotExist:
-            return self.error("Problem does not exists")
+            return self.error("该题目不存在")
 
         if problem.contest:
             ensure_created_by(problem.contest, request.user)
@@ -127,7 +127,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
 
         test_case_dir = os.path.join(settings.TEST_CASE_DIR, problem.test_case_id)
         if not os.path.isdir(test_case_dir):
-            return self.error("Test case does not exists")
+            return self.error("该题目的测试用例不存在")
         name_list = self.filter_name_list(os.listdir(test_case_dir), problem.spj)
         name_list.append("info")
         file_name = os.path.join(test_case_dir, problem.test_case_id + ".zip")
@@ -151,7 +151,7 @@ class TestCaseAPI(CSRFExemptAPIView, TestCaseZipProcessor):
             spj = form.cleaned_data["spj"] == "true"
             file = form.cleaned_data["file"]
         else:
-            return self.error("Upload failed")
+            return self.error("文件上传失败")
         zip_file = f"/tmp/{rand_str()}.zip"
         with open(zip_file, "wb") as f:
             for chunk in file:
@@ -200,14 +200,14 @@ class ProblemBase(APIView):
     def delete(self, request):
         id = request.GET.get("id")
         if not id:
-            return self.error("Invalid parameter, id is required")
+            return self.error("无效的参数, id is required")
         try:
             problem = Problem.objects.get(id=id, contest_id__isnull=True)
         except Problem.DoesNotExist:
-            return self.error("Problem does not exists")
+            return self.error("该题目不存在")
         ensure_created_by(problem, request.user)
         if Submission.objects.filter(problem=problem).exists():
-            return self.error("Can't delete the problem as it has submissions")
+            return self.error("不能删除该题目，因为此题目还有代码提交中")
         d = os.path.join(settings.TEST_CASE_DIR, problem.test_case_id)
         if os.path.isdir(d):
             shutil.rmtree(d, ignore_errors=True)
@@ -222,9 +222,9 @@ class ProblemAPI(ProblemBase):
         data = request.data
         _id = data["_id"]
         if not _id:
-            return self.error("Display ID is required")
+            return self.error("展示id需要设置")
         if Problem.objects.filter(_id=_id, contest_id__isnull=True).exists():
-            return self.error("Display ID already exists")
+            return self.error("该展示id已经被使用了")
 
         error_info = self.common_checks(request)
         if error_info:
@@ -254,12 +254,12 @@ class ProblemAPI(ProblemBase):
                 ensure_created_by(problem, request.user)
                 return self.success(ProblemAdminSerializer(problem).data)
             except Problem.DoesNotExist:
-                return self.error("Problem does not exist")
+                return self.error("该题目不存在")
 
         problems = Problem.objects.filter(contest_id__isnull=True).order_by("-create_time")
         if rule_type:
             if rule_type not in ProblemRuleType.choices():
-                return self.error("Invalid rule_type")
+                return self.error("无效的比赛规则")
             else:
                 problems = problems.filter(rule_type=rule_type)
 
@@ -280,13 +280,13 @@ class ProblemAPI(ProblemBase):
             problem = Problem.objects.get(id=problem_id)
             ensure_created_by(problem, request.user)
         except Problem.DoesNotExist:
-            return self.error("Problem does not exist")
+            return self.error("该题目不存在")
 
         _id = data["_id"]
         if not _id:
-            return self.error("Display ID is required")
+            return self.error("展示id需要设置")
         if Problem.objects.exclude(id=problem_id).filter(_id=_id, contest_id__isnull=True).exists():
-            return self.error("Display ID already exists")
+            return self.error("该展示id已经被使用了")
 
         error_info = self.common_checks(request)
         if error_info:
@@ -318,17 +318,17 @@ class ContestProblemAPI(ProblemBase):
             contest = Contest.objects.get(id=data.pop("contest_id"))
             ensure_created_by(contest, request.user)
         except Contest.DoesNotExist:
-            return self.error("Contest does not exist")
+            return self.error("该比赛不存在")
 
         if data["rule_type"] != contest.rule_type:
-            return self.error("Invalid rule type")
+            return self.error("无效的比赛规则")
 
         _id = data["_id"]
         if not _id:
-            return self.error("Display ID is required")
+            return self.error("展示id需要设置")
 
         if Problem.objects.filter(_id=_id, contest=contest).exists():
-            return self.error("Duplicate Display id")
+            return self.error("该展示id已经被使用了")
 
         error_info = self.common_checks(request)
         if error_info:
@@ -358,7 +358,7 @@ class ContestProblemAPI(ProblemBase):
                 problem = Problem.objects.get(id=problem_id)
                 ensure_created_by(problem, user)
             except Problem.DoesNotExist:
-                return self.error("Problem does not exist")
+                return self.error("该题目不存在")
             return self.success(ProblemAdminSerializer(problem).data)
 
         if not contest_id:
@@ -382,10 +382,10 @@ class ContestProblemAPI(ProblemBase):
             contest = Contest.objects.get(id=data.pop("contest_id"))
             ensure_created_by(contest, user)
         except Contest.DoesNotExist:
-            return self.error("Contest does not exist")
+            return self.error("该比赛不存在")
 
         if data["rule_type"] != contest.rule_type:
-            return self.error("Invalid rule type")
+            return self.error("无效的比赛规则")
 
         problem_id = data.pop("id")
 
@@ -393,7 +393,7 @@ class ContestProblemAPI(ProblemBase):
             problem = Problem.objects.get(id=problem_id)
             ensure_created_by(problem, user)
         except Problem.DoesNotExist:
-            return self.error("Problem does not exist")
+            return self.error("该题目不存在")
 
         _id = data["_id"]
         if not _id:
