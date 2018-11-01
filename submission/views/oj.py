@@ -24,11 +24,11 @@ class SubmissionAPI(APIView):
         if not can_consume:
             return "Please wait %d seconds" % (int(wait))
 
-        ip_bucket = TokenBucket(key=request.session["ip"],
-                                redis_conn=cache, **SysOptions.throttling["ip"])
-        can_consume, wait = ip_bucket.consume()
-        if not can_consume:
-            return "Captcha is required"
+        # ip_bucket = TokenBucket(key=request.session["ip"],
+        #                         redis_conn=cache, **SysOptions.throttling["ip"])
+        # can_consume, wait = ip_bucket.consume()
+        # if not can_consume:
+        #     return "Captcha is required"
 
     @validate_serializer(CreateSubmissionSerializer)
     @login_required
@@ -50,7 +50,7 @@ class SubmissionAPI(APIView):
                     user_ip = ipaddress.ip_address(request.session.get("ip"))
                 except ValueError:
                     user_ip = '127.0.0.1'
-
+                print(user_ip)
                 if contest.allowed_ip_ranges:
                     if not any(user_ip in ipaddress.ip_network(cidr, strict=False) for cidr in contest.allowed_ip_ranges):
                         return self.error("Your IP is not allowed in this contest")
