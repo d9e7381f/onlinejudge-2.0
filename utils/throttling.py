@@ -3,7 +3,7 @@ import time
 
 class TokenBucket:
     """
-    注意：对于单个key的操作不是线程安全的s
+    注意：对于单个key的操作不是线程安全的
     """
     def __init__(self, key, capacity, fill_rate, default_capacity, redis_conn):
         """
