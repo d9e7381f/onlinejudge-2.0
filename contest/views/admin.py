@@ -21,14 +21,14 @@ class ContestAPI(APIView):
         data["end_time"] = dateutil.parser.parse(data["end_time"])
         data["created_by"] = request.user
         if data["end_time"] <= data["start_time"]:
-            return self.error("Start time must occur earlier than end time")
+            return self.error("比赛的开始时间应当早于结束时间，请重新设置")
         if data.get("password") and data["password"] == "":
             data["password"] = None
         for ip_range in data["allowed_ip_ranges"]:
             try:
                 ip_network(ip_range, strict=False)
             except ValueError:
-                return self.error(f"{ip_range} is not a valid cidr network")
+                return self.error(f"{ip_range} 不是一组有效的网络")
         contest = Contest.objects.create(**data)
         return self.success(ContestAdminSerializer(contest).data)
 
@@ -39,11 +39,11 @@ class ContestAPI(APIView):
             contest = Contest.objects.get(id=data.pop("id"))
             ensure_created_by(contest, request.user)
         except Contest.DoesNotExist:
-            return self.error("Contest does not exist")
+            return self.error("该比赛不存在")
         data["start_time"] = dateutil.parser.parse(data["start_time"])
         data["end_time"] = dateutil.parser.parse(data["end_time"])
         if data["end_time"] <= data["start_time"]:
-            return self.error("Start time must occur earlier than end time")
+            return self.error("比赛的开始时间应当早于结束时间，请重新设置")
         if not data["password"]:
             data["password"] = None
         for ip_range in data["allowed_ip_ranges"]:
@@ -68,7 +68,7 @@ class ContestAPI(APIView):
                 ensure_created_by(contest, request.user)
                 return self.success(ContestAdminSerializer(contest).data)
             except Contest.DoesNotExist:
-                return self.error("Contest does not exist")
+                return self.error("该比赛不存在")
 
         contests = Contest.objects.all().order_by("-create_time")
         if request.user.is_admin():
@@ -93,7 +93,7 @@ class ContestAnnouncementAPI(APIView):
             data["contest"] = contest
             data["created_by"] = request.user
         except Contest.DoesNotExist:
-            return self.error("Contest does not exist")
+            return self.error("该比赛不存在")
         announcement = ContestAnnouncement.objects.create(**data)
         return self.success(ContestAnnouncementSerializer(announcement).data)
 
@@ -107,7 +107,7 @@ class ContestAnnouncementAPI(APIView):
             contest_announcement = ContestAnnouncement.objects.get(id=data.pop("id"))
             ensure_created_by(contest_announcement, request.user)
         except ContestAnnouncement.DoesNotExist:
-            return self.error("Contest announcement does not exist")
+            return self.error("该比赛公告不存在")
         for k, v in data.items():
             setattr(contest_announcement, k, v)
         contest_announcement.save()
@@ -144,11 +144,11 @@ class ContestAnnouncementAPI(APIView):
                     ).data
                 )
             except ContestAnnouncement.DoesNotExist:
-                return self.error("Contest announcement does not exist")
+                return self.error("该比赛公告不存在")
 
         contest_id = request.GET.get("contest_id")
         if not contest_id:
-            return self.error("Parameter error")
+            return self.error("参数错误")
         contest_announcements = ContestAnnouncement.objects.filter(contest_id=contest_id)
         if request.user.is_admin():
             contest_announcements = contest_announcements.filter(created_by=request.user)
@@ -191,10 +191,10 @@ class ACMContestHelper(APIView):
         try:
             rank = ACMContestRank.objects.get(pk=data["rank_id"])
         except ACMContestRank.DoesNotExist:
-            return self.error("Rank id does not exist")
+            return self.error("该排行榜不存在")
         problem_rank_status = rank.submission_info.get(data["problem_id"])
         if not problem_rank_status:
-            return self.error("Problem id does not exist")
+            return self.error("该题目不存在")
         problem_rank_status["checked"] = data["checked"]
         rank.save(update_fields=("submission_info",))
         return self.success()

@@ -30,7 +30,7 @@ class AnnouncementAdminAPI(APIView):
         try:
             announcement = Announcement.objects.get(id=data.pop("id"))
         except Announcement.DoesNotExist:
-            return self.error("Announcement does not exist")
+            return self.error("公告不存在")
 
         for k, v in data.items():
             setattr(announcement, k, v)
@@ -49,7 +49,7 @@ class AnnouncementAdminAPI(APIView):
                 announcement = Announcement.objects.get(id=announcement_id)
                 return self.success(AnnouncementSerializer(announcement).data)
             except Announcement.DoesNotExist:
-                return self.error("Announcement does not exist")
+                return self.error("公告不存在")
         announcement = Announcement.objects.all().order_by("-create_time")
         if request.GET.get("visible") == "true":
             announcement = announcement.filter(visible=True)

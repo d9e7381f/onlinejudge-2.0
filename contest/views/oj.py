@@ -19,7 +19,7 @@ class ContestAnnouncementListAPI(APIView):
     def get(self, request):
         contest_id = request.GET.get("contest_id")
         if not contest_id:
-            return self.error("Invalid parameter, contest_id is required")
+            return self.error("无效的参数，需要比赛信息")
         data = ContestAnnouncement.objects \
                 .select_related("created_by__userprofile") \
                 .filter(contest_id=contest_id, visible=True)
@@ -39,13 +39,13 @@ class ContestAPI(APIView):
     def get(self, request):
         id = request.GET.get("id")
         if not id:
-            return self.error("Invalid parameter, id is required")
+            return self.error("无效的参数, id is required")
         try:
             contest = Contest.objects.select_related(
                 'created_by__userprofile'
             ).get(id=id, visible=True)
         except Contest.DoesNotExist:
-            return self.error("Contest does not exist")
+            return self.error("该比赛不存在")
         data = ContestRetrieveSerializer(contest, context={'request': request}).data
         data["now"] = datetime2str(now())
         return self.success(data)
@@ -80,9 +80,9 @@ class ContestPasswordVerifyAPI(APIView):
         try:
             contest = Contest.objects.get(id=data["contest_id"], visible=True, password__isnull=False)
         except Contest.DoesNotExist:
-            return self.error("Contest does not exist")
+            return self.error("该比赛不存在")
         if contest.password != data["password"]:
-            return self.error("Wrong password")
+            return self.error("密码错误")
 
         # password verify OK.
         if "accessible_contests" not in request.session:
