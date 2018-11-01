@@ -1,0 +1,38 @@
+{
+  "update": [
+    {
+      "version": "2017-03-27",
+      "level": "Important",
+      "title": "Update at 2018-03-27",
+      "details": [
+        "<span style=\"color:  red;\">Fix some bugs about problem submission statistics</span>",
+        "Fix some bugs that may cause 'compile error' when submitted code contains unicode characters"
+      ]
+    },
+    {
+      "version": "2017-03-23",
+      "level": "Recommend",
+      "title": "Update at 2018-03-23",
+      "details": [
+        "Fix a bug about Java language memory usage",
+        "Update Java to version 1.8",
+        "[important] Google analytics is added with developer's account, it is only used for statistics",
+        "Problem export and import function will be released in next week",
+        "Other bugs and enhancements"
+      ]
+    },
+    {
+      "version": "2017-01-04",
+      "level": "Recommend",
+      "title": "Update at 2018-01-04",
+      "details": [
+        "Fix some issues under IE/Edge",
+        "Add backend error reporter",
+        "New email template",
+        "A more flexible throttling function",
+        "Add admin dashboard (this page)",
+        "Other bugs and enhancements"
+      ]
+    }
+  ]
+}

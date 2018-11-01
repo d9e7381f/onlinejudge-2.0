@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  web:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - "0.0.0.0:8000:8000"
+      - "0.0.0.0:80:80"
+    tty:
+      True
+    environment:
+      DEBUG: 1
+      SECRET_KEY: '4*yq&uy!9*kk(xfox9lkc*4#&#t6iec!bk69epzno@tyk9dpg6'
+      VOTE_SCORE_INVALID_TO_VALID: 30
+      VOTE_SCORE_INVALID_TO_DELETE: -28
+      VOTE_SCORE_VALID_TO_DELETE: -40
+      MAX_VOTES_BEFORE_TRIGGER: 20
+      DIFFICULTY_BASE_SUBMISSIONS_COUNT: 10
+      DIFFICULTY_RATE_MAP_LOW: 1.0
+      DIFFICULTY_RATE_MAP_MID: 0.5
+      DIFFICULTY_RATE_MAP_HIGH: 0.25
+      INVALID_PROBLEMS_QUOTA: 4
+      OJ_DOMAIN: 'https://oj.dgut.edu.cn'
+      APP_ID: 'oj'
+      DGUT_LOGIN: 'https://cas.dgut.edu.cn/?appi=oj'
+      DGUT_CHECK_TOKEN: 'https://cas.dgut.edu.cn/ssoapi/v2/checkToken'
+      DGUT_LOGOUT: 'https://cas.dgut.edu.cn/user/logout?servic=oj'
+      DGUT_USER_INFO: 'https://cas.dgut.edu.cn/oauth/getUserInfo'
+      DGUT_APP_SECRET: '9fc1336f3f5d'
+      VOTE_RANK_Z_SCORE: 1.96
+      # POSTGRES_DB: onlinejudge
+      # POSTGRES_USER: onlinejudge
+      # POSTGRES_PASSWORD: onlinejudge
