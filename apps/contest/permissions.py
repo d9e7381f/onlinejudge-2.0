@@ -29,6 +29,6 @@ class ContestPermission(permissions.BasePermission):
                 instance = Contest.objects.get(pk=pk)
                 if instance.created_by != user:
                     self.message = '你不是该竞赛的创建人, 无法修改此竞赛'
-                    return False
+                    return user.is_admin_role()
 
             return user.is_admin_role()
